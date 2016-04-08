@@ -4,7 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-class Program
+//https://gist.github.com/jwoschitz/1129249
+class Program_BF_Ser_Git
 {
     #region Private variables
 
