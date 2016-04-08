@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace BruteForce
 {
 
     //https://msdn.microsoft.com/en-us/library/dd997306.aspx
-    static class Program
+    static class Program_BF_ParallelTask
     {
         static char[] attackVector = new char[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
         's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
@@ -19,18 +20,18 @@ namespace BruteForce
         static Object lockObj = new object();
         static int attackVectorLengt = attackVector.Length;
         static bool showOutput = true;
-        static int finishedProducers = 0;
-        static int maxLength;
-        static string password;
+        static int maxLength = 4;
+        const string password = "!eT@";
+        static Stopwatch sw;
 
         static void Main()
-        {
-            Console.WriteLine("Welcome to C# - Brute Force!");
-            Console.Write("Please enter a password: ");
-            password = Console.ReadLine();
-            Console.Write("Max. Length [5]: ");
+        {            
+            Console.WriteLine("Welcome to C# - Brute Force - PARALLEL!");
+            //Console.Write("Please enter a password: ");
+            //password = Console.ReadLine();
+            Console.Write("Max. Length [{0}]: ",maxLength);
             var maxLengthS = Console.ReadLine();
-            maxLength = String.IsNullOrEmpty(maxLengthS)?5:Int32.Parse(maxLengthS);
+            maxLength = String.IsNullOrEmpty(maxLengthS)?maxLength:Int32.Parse(maxLengthS);
             Console.Write("Show Steps (true/[false]: ");
             var showOutputS = Console.ReadLine();
             showOutput = String.IsNullOrEmpty(showOutputS) ? false : Boolean.Parse(showOutputS);
@@ -38,9 +39,6 @@ namespace BruteForce
 
             // The token source for issuing the cancelation request.
             CancellationTokenSource cts = new CancellationTokenSource();
-
-            // A blocking collection that can hold no more than 3000 items at a time.
-            BlockingCollection<char[]> attackCollection = new BlockingCollection<char[]>();//100000);
 
             // Set console buffer to hold our prodigious output.
             Console.SetBufferSize(80, 4000);
@@ -61,25 +59,18 @@ namespace BruteForce
 
             try
             {
+                sw = new Stopwatch();
+                sw.Start();
+
                 //Producer
                 for (int i = 1; i < maxLength+1; i++)
                 {
                     int start_length = i;
                     WaitingTasks.Add(
-                            Task.Run(() => NonBlockingProducer(attackCollection, start_length, cts.Token))
+                            Task.Run(() => NonBlockingProducer(start_length, cts))
                     );
                 }
-
-
-                //Consumer
-                for (int i = 0; i < (maxLength*2); i++)
-                {
-                    WaitingTasks.Add(
-                        Task.Run(() => NonBlockingConsumer(attackCollection, cts))
-                    );
-                }
-
-
+                
             // Wait for the tasks to complete execution
             Task.WaitAll(WaitingTasks.ToArray(),cts.Token);
 
@@ -139,9 +130,9 @@ namespace BruteForce
             Console.WriteLine("\r\nNo more items to take.");
         }
 
-        static void NonBlockingProducer(BlockingCollection<char[]> bc, int length, CancellationToken ct)
+        static void NonBlockingProducer(int length, CancellationTokenSource cts)
         {
-            Console.WriteLine("Starting Producer for length {0}",length);
+            Console.WriteLine("{1}: Starting Producer for length {0}", length, sw.ElapsedMilliseconds);
             List<char[]> attack = new List<char[]>(length);
 
             for (int i = 0; i < length; i++)
@@ -153,69 +144,39 @@ namespace BruteForce
 
             // Use ParallelOptions instance to store the CancellationToken
             ParallelOptions po = new ParallelOptions();
-            po.CancellationToken = ct;
+            po.CancellationToken = cts.Token;
 
             try
             {
                 Parallel.ForEach(resultQuery, po, item =>
                     {
-                        bool success = false;
-                        do
+                        char[] _tryChar = item.ToArray();
+                        String _try = new string(_tryChar);
+
+                        if(_try.Equals(password))
                         {
-                            char[] itemToAdd = item.ToArray();
-                            // Cancellation causes OCE. We know how to handle it.
-                            try
+                            sw.Stop();
+                            Console.WriteLine();
+                            Console.WriteLine("{1}: PASSWORD FOUND! => {0}",_try,sw.ElapsedMilliseconds);
+                            cts.Cancel();
+                        }
+                        else
+                        {
+                            if(showOutput)
                             {
-                                // A shorter timeout causes more failures.
-                                success = bc.TryAdd(itemToAdd, 2, ct);
-                            }
-                            catch (OperationCanceledException)
-                            {
-                                Console.WriteLine("Add loop canceled.");
-                                // Let other threads know we're done in case
-                                // they aren't monitoring the cancellation token.
-                                lock (bc)
-                                {
-                                    bc.CompleteAdding();
-                                    po.CancellationToken.ThrowIfCancellationRequested();
-                                }
-                            }
+                                Console.WriteLine("{1}: Tried '{0}' ", _try, sw.ElapsedMilliseconds);
 
-                            if (success)
-                            {
-                                if (showOutput)
-                                {
-                                    Console.WriteLine(" Add:{0}", new String(itemToAdd));
-                                }
                             }
-                            else
-                            {
-                                Console.WriteLine(" AddBlocked:{0} Count = {1}", new String(itemToAdd), bc.Count);
-                                // Don't increment nextItem. Try again on next iteration.
-
-                                //Do something else useful instead.
-                                //UpdateProgress(itemToAdd);
-                            }
-
-                        } while (success == false);
-
-                        
+                        }
+                  
                     });
 
-                lock (lockObj)
-                {
-                    finishedProducers += 1;
-                    if(finishedProducers >= maxLength)
-                    {
-                        bc.CompleteAdding();
-                    }
-                }
 
-                Console.WriteLine("Finished Producer for Length {0}",length);
+                Console.WriteLine("{1}: Finished Producer for Length {0}", length, sw.ElapsedMilliseconds);
             }
             catch (OperationCanceledException)
             {
-                Console.WriteLine("Aborted Produces for Length {0}",length);
+                Console.WriteLine("{1}: Aborted Produces for Length {0}", length, sw.ElapsedMilliseconds);
             }       
         }
 
