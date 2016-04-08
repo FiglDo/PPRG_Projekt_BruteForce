@@ -21,10 +21,13 @@ namespace BruteForce
         static bool showOutput = true;
         static int finishedProducers = 0;
         static int maxLength;
+        static string password;
 
         static void Main()
         {
             Console.WriteLine("Welcome to C# - Brute Force!");
+            Console.Write("Please enter a password: ");
+            password = Console.ReadLine();
             Console.Write("Max. Length [5]: ");
             var maxLengthS = Console.ReadLine();
             maxLength = String.IsNullOrEmpty(maxLengthS)?5:Int32.Parse(maxLengthS);
@@ -37,7 +40,7 @@ namespace BruteForce
             CancellationTokenSource cts = new CancellationTokenSource();
 
             // A blocking collection that can hold no more than 3000 items at a time.
-            BlockingCollection<char[]> attackCollection = new BlockingCollection<char[]>(3000);
+            BlockingCollection<char[]> attackCollection = new BlockingCollection<char[]>();//100000);
 
             // Set console buffer to hold our prodigious output.
             Console.SetBufferSize(80, 4000);
@@ -59,19 +62,20 @@ namespace BruteForce
             try
             {
                 //Producer
-                for (int i = 0; i < maxLength; i++)
+                for (int i = 1; i < maxLength+1; i++)
                 {
+                    int start_length = i;
                     WaitingTasks.Add(
-                            Task.Run(() => NonBlockingProducer(attackCollection, i, cts.Token))
+                            Task.Run(() => NonBlockingProducer(attackCollection, start_length, cts.Token))
                     );
                 }
 
 
                 //Consumer
-                for (int i = 0; i < maxLength; i++)
+                for (int i = 0; i < (maxLength*2); i++)
                 {
                     WaitingTasks.Add(
-                        Task.Run(() => NonBlockingConsumer(attackCollection, cts.Token))
+                        Task.Run(() => NonBlockingConsumer(attackCollection, cts))
                     );
                 }
 
@@ -80,7 +84,6 @@ namespace BruteForce
             Task.WaitAll(WaitingTasks.ToArray(),cts.Token);
 
             }
-
             catch (OperationCanceledException)
             {
                 Console.WriteLine("Threads Aborted");
@@ -93,7 +96,7 @@ namespace BruteForce
             Environment.Exit(0);
         }
 
-        static void NonBlockingConsumer(BlockingCollection<char[]> bc, CancellationToken ct)
+        static void NonBlockingConsumer(BlockingCollection<char[]> bc, CancellationTokenSource cts)
         {
             // IsCompleted == (IsAddingCompleted && Count == 0)
             while (!bc.IsCompleted)
@@ -101,15 +104,23 @@ namespace BruteForce
                 char[] nextItem;
                 try
                 {
-                    if (!bc.TryTake(out nextItem, 0, ct))
+                    if (!bc.TryTake(out nextItem, 0, cts.Token))
                     {
                         Console.WriteLine("Take Blocked");
                     }
                     else
                     {
+                        String _try = new String(nextItem);
+
                         if (showOutput)
                         {
-                            Console.WriteLine(" Take:{0}", new String(nextItem));
+                            Console.WriteLine(" Take:{0}", _try);
+                        }
+
+                        if(_try.Equals(password))
+                        {
+                            cts.Cancel();
+                            Console.WriteLine("PASSWORD FOUND! => '{0}'",_try);
                         }
                     }
                 }
@@ -122,7 +133,7 @@ namespace BruteForce
 
                 // Slow down consumer just a little to cause
                 // collection to fill up faster, and lead to "AddBlocked"
-                Thread.SpinWait(100);
+                Thread.SpinWait(5000);
             }
 
             Console.WriteLine("\r\nNo more items to take.");
@@ -130,7 +141,8 @@ namespace BruteForce
 
         static void NonBlockingProducer(BlockingCollection<char[]> bc, int length, CancellationToken ct)
         {
-            List<char[]> attack = new List<char[]>();
+            Console.WriteLine("Starting Producer for length {0}",length);
+            List<char[]> attack = new List<char[]>(length);
 
             for (int i = 0; i < length; i++)
             {
@@ -193,11 +205,13 @@ namespace BruteForce
                 lock (lockObj)
                 {
                     finishedProducers += 1;
-                    if(finishedProducers == maxLength)
+                    if(finishedProducers >= maxLength)
                     {
                         bc.CompleteAdding();
                     }
                 }
+
+                Console.WriteLine("Finished Producer for Length {0}",length);
             }
             catch (OperationCanceledException)
             {
