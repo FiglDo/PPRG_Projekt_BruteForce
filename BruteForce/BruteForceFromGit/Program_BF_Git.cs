@@ -10,7 +10,7 @@ class Program_BF_Ser_Git
     #region Private variables
 
     // the secret password which we will try to find via brute force
-    private static string password = "!eT@!e";
+    private static string password = "!eT@G";
     private static string result;
     static bool showOutput = true;
     static Stopwatch sw;
@@ -26,9 +26,8 @@ class Program_BF_Ser_Git
      * if less characters are used (e.g. only lower case chars) the faster the password is matched  */
     private static char[] attackVector =
     { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
-            's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-            'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ','!', '"','#','$','%','&','\'',')','(','*','+',
-            '´','-','.','/',':',';','<','=','>','?','@','[','\\',']','^','_','`','{','|','}','~'};
+        's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ','!','$','%','@','-','_'};
 
     #endregion
 
@@ -36,7 +35,7 @@ class Program_BF_Ser_Git
     {
         Console.WriteLine("Welcome to BruteForceSeriellGit");
         Console.WriteLine();
-        Console.Write("Show Steps (true/[false]: ");
+        Console.Write("Show Steps (true/[false]): ");
         var showOutputS = Console.ReadLine();
         showOutput = String.IsNullOrEmpty(showOutputS) ? false : Boolean.Parse(showOutputS);
         sw = new Stopwatch();

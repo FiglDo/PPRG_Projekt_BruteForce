@@ -14,25 +14,24 @@ namespace BruteForce
     {
         static char[] attackVector = new char[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
         's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ','!', '"','#','$','%','&','\'',')','(','*','+',
-        '´','-','.','/',':',';','<','=','>','?','@','[','\\',']','^','_','`','{','|','}','~'};
+        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ','!','$','%','@','-','_'};
 
         static Object lockObj = new object();
         static int attackVectorLengt = attackVector.Length;
         static bool showOutput = true;
-        static int maxLength = 4;
-        const string password = "!eT@";
+        const string password = "!eT@G"; //"!eT@";
+        static int maxLength = password.Length;
         static Stopwatch sw;
 
         static void Main()
         {            
-            Console.WriteLine("Welcome to C# - Brute Force - PARALLEL!");
+            Console.WriteLine("{0} Welcome to C# - Brute Force - PARALLEL!",DateTime.Now.ToString());
             //Console.Write("Please enter a password: ");
             //password = Console.ReadLine();
-            Console.Write("Max. Length [{0}]: ",maxLength);
+            Console.Write("Max. Length [{0}]): ",maxLength);
             var maxLengthS = Console.ReadLine();
             maxLength = String.IsNullOrEmpty(maxLengthS)?maxLength:Int32.Parse(maxLengthS);
-            Console.Write("Show Steps (true/[false]: ");
+            Console.Write("Show Steps (true/[false]): ");
             var showOutputS = Console.ReadLine();
             showOutput = String.IsNullOrEmpty(showOutputS) ? false : Boolean.Parse(showOutputS);
 
@@ -111,7 +110,7 @@ namespace BruteForce
                         if(_try.Equals(password))
                         {
                             cts.Cancel();
-                            Console.WriteLine("PASSWORD FOUND! => '{0}'",_try);
+                            Console.WriteLine("{1} PASSWORD FOUND! => '{0}'",_try,DateTime.Now.ToString());
                         }
                     }
                 }

@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BruteForceSeriell
+namespace BruteForceParallelDepth
 {
-    class Program_BF_Ser_Depth
+    class Program_BF_Parallel_Depth
     {
         static char[] attackVector = new char[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
         's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
@@ -20,7 +20,7 @@ namespace BruteForceSeriell
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome to C# - Brute Force - SERIELL DEPTH!");
+            Console.WriteLine("Welcome to C# - Brute Force - PARALLEL Depth!");
             //Console.Write("Please enter a password: ");
             //password = Console.ReadLine();
             Console.Write("Max. Length [{0}]: ", maxLength);
@@ -39,17 +39,19 @@ namespace BruteForceSeriell
 
         static void BruteForce(string fixedPart, int maxDepth)
         {
-            if ((fixedPart.Length+1) > maxDepth)
+            if ((fixedPart.Length + 1) > maxDepth)
                 return;
 
-            for (int i = 0; i < attackVector.Length; i++)
+            //for (int i = 0; i < attackVector.Length; i++)
+            Parallel.For(0,attackVector.Length, i => 
             {
                 if ((fixedPart + attackVector[i]).Equals(password))
                 {
                     sw.Stop();
                     Console.WriteLine();
                     Console.WriteLine("{1}: PASSWORD FOUND! => {0}", (fixedPart + attackVector[i]), sw.ElapsedMilliseconds);
-                    break;
+                    Console.ReadLine();
+                    Environment.Exit(0);
                 }
                 else
                 {
@@ -60,8 +62,9 @@ namespace BruteForceSeriell
 
                     BruteForce((fixedPart + attackVector[i]), maxDepth);
 
-                } 
+                }
             }
+            );
         }
     }
 }
