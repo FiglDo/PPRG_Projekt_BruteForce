@@ -9,7 +9,8 @@ const char *alphabet = "abcdefghijklmnopqrstuvwxyz"
 "0123456789!$%@-_";
 
 //const char *alphabet = "abc";
-const char *password = "!eT@G";
+//const char *password = "acc";
+const char *password = "!eT@";
 
 //#define maxLen 5
 
@@ -29,22 +30,22 @@ void forceDeBrute(int maxLen){
 	}
 
 	int stepPointer = 0;
-	char* word = malloc(sizeof(char)+2);
-
+	char* word = malloc(sizeof(char)+1);
+	int pos = 0;
 	for (double i = 0; i < len; i++){
 		if (i >= steps[stepPointer]){
 			stepPointer++;
-			realloc(word, (stepPointer+1) * sizeof(char)+2);
+			realloc(word, (stepPointer+1) * sizeof(char)+1);
 		}
 		
 		int j = 0;
 		double sum = 0;
 		for (j; j <= stepPointer; j++){
-			int pos = (int)fmod((i - sum) / pow(alphabetSize,j), alphabetSize);
+			pos = (int)fmod((i - sum) / pow(alphabetSize, j), alphabetSize);
 			sum = sum + pow((pos + 1),j);
 			word[(stepPointer-j)] = alphabet[pos];
 		}
-		word[(j + 1)] = '\0';
+		word[j] = '\0';
 		//fprintf(stdout,"%s\n", word);
 		if (strcmp(word,password) ==0 ){ 
 			fprintf(stdout, "found it: %s\n", word);
@@ -54,7 +55,7 @@ void forceDeBrute(int maxLen){
 
 	free(word);
 	free(steps);
-	//free("Willy");
+	//free("willy");
 }
 
 int main(int argc, char *argv[])
