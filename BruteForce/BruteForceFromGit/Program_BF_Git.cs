@@ -12,6 +12,8 @@ class Program_BF_Ser_Git
     // the secret password which we will try to find via brute force
     private static string password = "!eT@!e";
     private static string result;
+    static bool showOutput = true;
+    static Stopwatch sw;
 
     private static bool isMatched = false;
 
@@ -22,29 +24,33 @@ class Program_BF_Ser_Git
 
     /* An array containing the characters which will be used to create the brute force keys,
      * if less characters are used (e.g. only lower case chars) the faster the password is matched  */
-    private static char[] charactersToTest =
-    {
-        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-        'u', 'v', 'w', 'x', 'y', 'z','A','B','C','D','E',
-        'F','G','H','I','J','K','L','M','N','O','P','Q','R',
-        'S','T','U','V','W','X','Y','Z','1','2','3','4','5',
-        '6','7','8','9','0','!','$','#','@','-'
-    };
+    private static char[] attackVector =
+    { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
+            's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+            'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ','!', '"','#','$','%','&','\'',')','(','*','+',
+            '´','-','.','/',':',';','<','=','>','?','@','[','\\',']','^','_','`','{','|','}','~'};
 
     #endregion
 
     static void Main(string[] args)
     {
+        Console.WriteLine("Welcome to BruteForceSeriellGit");
+        Console.WriteLine();
+        Console.Write("Show Steps (true/[false]: ");
+        var showOutputS = Console.ReadLine();
+        showOutput = String.IsNullOrEmpty(showOutputS) ? false : Boolean.Parse(showOutputS);
+        sw = new Stopwatch();
+
         var timeStarted = DateTime.Now;
         Console.WriteLine("Start BruteForce - {0}", timeStarted.ToString());
 
         // The length of the array is stored permanently during runtime
-        charactersToTestLength = charactersToTest.Length;
+        charactersToTestLength = attackVector.Length;
 
         // The length of the password is unknown, so we have to run trough the full search space
         var estimatedPasswordLength = 0;
 
+        sw.Start();
         while (!isMatched)
         {
             /* The estimated length of the password will be increased and every possible key for this
@@ -69,7 +75,7 @@ class Program_BF_Ser_Git
     /// <param name="keyLength">The length of the key</param>
     private static void startBruteForce(int keyLength)
     {
-        var keyChars = createCharArray(keyLength, charactersToTest[0]);
+        var keyChars = createCharArray(keyLength, attackVector[0]);
         // The index of the last character will be stored for slight perfomance improvement
         var indexOfLastChar = keyLength - 1;
         createNewKey(0, keyChars, keyLength, indexOfLastChar);
@@ -102,7 +108,7 @@ class Program_BF_Ser_Git
         {
             /* The character at the currentCharPosition will be replaced by a
              * new character from the charactersToTest array => a new key combination will be created */
-            keyChars[currentCharPosition] = charactersToTest[i];
+            keyChars[currentCharPosition] = attackVector[i];
 
             // The method calls itself recursively until all positions of the key char array have been replaced
             if (currentCharPosition < indexOfLastChar)
@@ -120,14 +126,22 @@ class Program_BF_Ser_Git
                 {
                     if (!isMatched)
                     {
+                        sw.Stop();
+
                         isMatched = true;
                         result = new String(keyChars);
+
+                        sw.Stop();
+                        Console.WriteLine();
+                        Console.WriteLine("{1}: PASSWORD FOUND! => {0}", result, sw.ElapsedMilliseconds);
+                        Console.ReadLine();
                     }
                     return;
                 }
                 else
                 {
-                    Console.WriteLine(new String(keyChars));
+                    if(showOutput)
+                        Console.WriteLine(new String(keyChars));
                 }
             }
         }

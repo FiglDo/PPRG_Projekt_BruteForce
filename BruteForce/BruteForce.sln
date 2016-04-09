@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BruteForceSeriellDepth", "B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BruteForceSeriellWidth", "vir\BruteForceSeriellWidth.csproj", "{0CD42D45-A4FD-4E08-AAE4-543AEB481DE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BruteForceFromGit", "BruteForceFromGit\BruteForceFromGit.csproj", "{E5D89281-2B8A-4D7B-B76E-CEF45E57C8AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BruteForceSeriellGit", "BruteForceFromGit\BruteForceSeriellGit.csproj", "{E5D89281-2B8A-4D7B-B76E-CEF45E57C8AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
