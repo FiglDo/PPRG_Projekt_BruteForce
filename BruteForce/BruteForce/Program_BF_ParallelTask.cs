@@ -156,7 +156,9 @@ namespace BruteForce
                         {
                             sw.Stop();
                             Console.WriteLine();
-                            Console.WriteLine("{1}: PASSWORD FOUND! => {0}",_try,sw.ElapsedMilliseconds);
+                            Console.WriteLine("{1}: PASSWORD FOUND! => {0}", _try, sw.ElapsedMilliseconds);
+                            Console.WriteLine("DATETIME: {0}", DateTime.Now.ToString());
+
                             cts.Cancel();
                         }
                         else
